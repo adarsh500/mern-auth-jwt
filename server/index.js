@@ -15,8 +15,8 @@ const app = express();
 //middlewares
 app.use(express.json());
 app.use(cors({ origin: '*' }));
-app.use(cookieParser());
 app.use(bodyparser.json());
+app.use(cookieParser());
 app.use(express.static(path.resolve(__dirname, '../client/build')));
 
 connectDB();
@@ -30,12 +30,13 @@ app.get('/api', (req, res) => {
   res.json({ message });
 });
 
+// app.get('/refresh');
+app.use(authRoutes);
+
 app.get('/*', (req, res) => {
   console.log('path is', __dirname);
   res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
 });
-
-app.use(authRoutes);
 
 app.listen(PORT, () => {
   console.log(`server running on PORT:${PORT}`);
