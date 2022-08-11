@@ -34,7 +34,6 @@ app.get('/api', (req, res) => {
 app.use(authRoutes);
 
 app.get('/*', (req, res) => {
-  console.log('path is', __dirname);
   res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
 });
 

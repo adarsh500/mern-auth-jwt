@@ -13,7 +13,6 @@ const createAccessToken = (_id, email) => {
 
 const signup = async (req, res) => {
   const { email, password } = req.body;
-  console.log('signup', email, password);
   try {
     const user = await User.signup(email, password);
     const token = createAccessToken(user._id, email);
@@ -26,14 +25,12 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
   const cookies = req.cookies;
   const { email, password } = req.body;
-  console.log('login', email, password);
   try {
     const user = await User.login(email, password);
     const accessToken = createAccessToken(user._id, email);
     const refreshToken = createRefreshToken(user._id, email);
     user.refreshToken = refreshToken;
     const result = await user.save();
-    console.log('save refresh token to user', result);
     res.cookie('jwt', refreshToken, { httpOnly: true, expireIn: '3d' });
     res.status(200).json({ email, accessToken });
   } catch (error) {
@@ -49,14 +46,12 @@ const refresh = async (req, res) => {
 
   const refreshToken = cookies.jwt;
   const user = await User.findOne({ refreshToken });
-  console.log('find user', user);
   if (!user) {
     //unauthorized
     res.sendStatus(403);
   }
 
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
-    console.log('refresh decoded', decoded);
     if (err || user.email !== decoded.email) {
       res.sendStatus(403);
     }
@@ -65,6 +60,20 @@ const refresh = async (req, res) => {
   });
 };
 
-const logout = async (req, res) => {};
+const logout = async (req, res) => {
+  const cookies = req.cookies;
+  if (!cookies?.jwt) {
+    return res.sendStatus(204);
+  }
+  const refreshToken = cookies.jwt;
+
+  const user = await User.findOne({ refreshToken });
+  if (user) {
+    user.refreshToken = '';
+    const result = await user.save();
+  }
+  res.clearCookie('jwt', { httpOnly: true });
+  res.sendStatus(204);
+};
 
 module.exports = { signup, login, refresh, logout };

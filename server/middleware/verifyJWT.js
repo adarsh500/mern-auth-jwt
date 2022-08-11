@@ -6,7 +6,6 @@ const verifyJWT = (req, res, next) => {
   if (!authHeader) {
     return res.sendStatus(401);
   }
-  console.log(authHeader);
 
   //Bearer token
   const token = authHeader.split(' ')[1];
@@ -16,7 +15,6 @@ const verifyJWT = (req, res, next) => {
       return res.sendStatus(403);
     }
 
-    console.log('decoded jwt', decoded);
     //decoded contains the data we pass using the token
     req.email = decoded.email;
     next();
